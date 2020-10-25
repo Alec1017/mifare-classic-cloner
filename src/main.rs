@@ -1,6 +1,7 @@
 use structopt::StructOpt;
 // use anyhow::{Context, Result};
 use std::process::Command;
+use std::path::PathBuf
 
 extern crate exitcode;
 
@@ -18,8 +19,20 @@ enum Mfcc {
 
         /// The source file to clone onto the new card
         #[structopt(parse(from_os_str))]
-        path: std::path::PathBuf,
+        path: PathBuf,
 
+    },
+
+    /// Overwrites content on card with given source file
+    Overwrite {
+
+        /// Optional .txt key file
+        #[structopt(short = "k", long = "key")]
+        key_file: Option<PathBuf>,
+
+        /// The source file to overwrite the card
+        #[structopt(parse(from_os_str))]
+        path: PathBuf
     }
 }
 
@@ -98,6 +111,31 @@ fn main() {
 
             println!("Done!");
 
+        }
+
+        Mfcc::Overwrite { key_file, path} => {
+
+            if let None = key_file {
+                println!("{}", key_file.display());
+            } else {
+                println!("There is no key file given");
+            }
+            println!("{}", path.display());
+
+            // First we want to dump the contents of the scanned card
+            // Using the keyfile if it exists
+            // let dump_blank = Command::new("mfoc")
+            //                 .arg("-O")
+            //                 .arg("blank_with_uid.mfd")
+            //                 .output()
+            //                 .expect("dumping of blank card failed");
+            
+            // if dump_blank.status.success() {
+            //     println!("Successfully dumped blank card");
+            // } else {
+            //     eprintln!("Error: couldn't output blank card dump");
+            //     std::process::exit(exitcode::USAGE);
+            // }
         }
     }
 }
