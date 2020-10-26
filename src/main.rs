@@ -1,7 +1,7 @@
 use structopt::StructOpt;
 // use anyhow::{Context, Result};
 use std::process::Command;
-use std::path::PathBuf
+use std::path::PathBuf;
 
 extern crate exitcode;
 
@@ -115,11 +115,11 @@ fn main() {
 
         Mfcc::Overwrite { key_file, path} => {
 
-            if let None = key_file {
-                println!("{}", key_file.display());
-            } else {
-                println!("There is no key file given");
+            match key_file {
+                Some(file) => { println!("{}", file.display()); }
+                None => { println!("There is no key file given"); }
             }
+
             println!("{}", path.display());
 
             // First we want to dump the contents of the scanned card
