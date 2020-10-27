@@ -36,6 +36,45 @@ enum Mfcc {
     }
 }
 
+/// Writes the given .mfd file to the destinatin .mfd file
+fn write_card(is_blank: bool, source_file: &PathBuf, dest_file: &PathBuf) -> Result<(), Box<dyn std::error::Error>>  {  
+
+    // Need to store Command::new into its own variable first
+    let mut command = Command::new("nfc-mfclassic");
+
+    // Determine write option depending on type of card received
+    if is_blank {
+        command.arg("W");
+    } else {
+        command.arg("w");
+    }
+
+    // Add remaining arguments
+    command.arg("a")
+           .arg(source_file)
+           .arg(dest_file)
+           .output()?;
+    Ok(())
+}
+
+
+/// Dumps the contents of a card into a .mfd with the given output name
+fn dump_card(key_file: Option<&PathBuf>, output_name: &str) -> Result<(), Box<dyn std::error::Error>>  {   
+    
+    // Need to store Command::new into its own variable first
+    let mut command = Command::new("mfoc");
+    command.arg("-O")
+           .arg(format!("{}.mfd", output_name));
+
+    // Add the key file option, if it exists
+    if let Some(file) = key_file {
+        command.arg("-k").arg(file);
+    }
+
+    command.output()?;
+    Ok(())
+}
+
 
 
 fn main() {
@@ -47,53 +86,37 @@ fn main() {
     // mfcc::find_matches(&content, &args.pattern, &mut std::io::stdout());
 
     match Mfcc::from_args() {
-        Mfcc::WriteBlank { uid, path} => {
+        Mfcc::WriteBlank { uid, path } => {
             println!("uid: {}", uid);
             println!("source file: {}", path.display());
 
             // first we want to set the blank card to have the proper uid
-            let uid_set_output = Command::new("nfc-mfsetuid")
-                                .arg(&uid)
-                                .output()
-                                .expect("nfc-mfsetuid command failed");
-
-            if uid_set_output.status.success() {
-                println!("Successfully set card to have UID: {}", &uid);
-            } else {
-                eprintln!("Error: couldn't find card");
-                std::process::exit(exitcode::USAGE);
+            match Command::new("nfc-mfsetuid").arg(&uid).output() {
+                Ok(_) => println!("Successfully set card to have UID: {}", &uid),
+                Err(_) => {
+                    println!("Error: can't set uid onto card");
+                    std::process::exit(exitcode::USAGE);
+                }
             }
-
 
             // Next we want to dump the blank card
-            let dump_blank = Command::new("mfoc")
-                            .arg("-O")
-                            .arg("blank_with_uid.mfd")
-                            .output()
-                            .expect("dumping of blank card failed");
-            
-            if dump_blank.status.success() {
-                println!("Successfully dumped blank card");
-            } else {
-                eprintln!("Error: couldn't output blank card dump");
-                std::process::exit(exitcode::USAGE);
+            match dump_card(None, "blank_with_uid") {
+                Ok(_) => println!("Successfully dumped blank card"),
+                Err(_) => {
+                    println!("Error: couldn't output blank card dump");
+                    std::process::exit(exitcode::USAGE);
+                }
             }
 
-            // Now we want to write the given source file onto the blank card
-            let write_dump = Command::new("nfc-mfclassic")
-                            .arg("W")
-                            .arg("a")
-                            .arg(&path)
-                            .arg("blank_with_uid.mfd")
-                            .output()
-                            .expect("writing to blank card failed");
-            
-            
-            if write_dump.status.success() {
-                println!("Successfully wrote to blank card");
-            } else {
-                eprintln!("Error: couldn't write to blank card");
-                std::process::exit(exitcode::USAGE);
+            let dumped_card = PathBuf::from("blank_with_uid.mfd");
+
+            // Next we want to dump the blank card
+            match write_card(true, &path, &dumped_card) {
+                Ok(_) => println!("Successfully wrote blank card"),
+                Err(_) => {
+                    println!("Error: couldn't write to blank card");
+                    std::process::exit(exitcode::USAGE);
+                }
             }
 
             // remove any generated files
@@ -104,10 +127,6 @@ fn main() {
                     std::process::exit(exitcode::USAGE);
                 }
             }
-
-            // println!("{}", output.status.success());
-            // println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-            // println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
 
             println!("Done!");
 
@@ -121,6 +140,8 @@ fn main() {
             }
 
             println!("{}", path.display());
+
+
 
             // First we want to dump the contents of the scanned card
             // Using the keyfile if it exists
