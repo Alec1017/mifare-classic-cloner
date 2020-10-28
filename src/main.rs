@@ -1,5 +1,4 @@
 use structopt::StructOpt;
-// use anyhow::{Context, Result};
 use std::process::Command;
 use std::path::PathBuf;
 
@@ -36,59 +35,15 @@ enum Mfcc {
     }
 }
 
-/// Writes the given .mfd file to the destinatin .mfd file
-fn write_card(is_blank: bool, source_file: &PathBuf, dest_file: &PathBuf) -> Result<(), Box<dyn std::error::Error>>  {  
-
-    // Need to store Command::new into its own variable first
-    let mut command = Command::new("nfc-mfclassic");
-
-    // Determine write option depending on type of card received
-    if is_blank {
-        command.arg("W");
-    } else {
-        command.arg("w");
-    }
-
-    // Add remaining arguments
-    command.arg("a")
-           .arg(source_file)
-           .arg(dest_file)
-           .output()?;
-    Ok(())
-}
-
-
-/// Dumps the contents of a card into a .mfd with the given output name
-fn dump_card(key_file: Option<&PathBuf>, output_name: &str) -> Result<(), Box<dyn std::error::Error>>  {   
-    
-    // Need to store Command::new into its own variable first
-    let mut command = Command::new("mfoc");
-    command.arg("-O")
-           .arg(format!("{}.mfd", output_name));
-
-    // Add the key file option, if it exists
-    if let Some(file) = key_file {
-        command.arg("-k").arg(file);
-    }
-
-    command.output()?;
-    Ok(())
-}
-
-
 
 fn main() {
-    // let args = Mfcc::from_args();
-    // println!("uid: {}", &args.uid);
-    // let content = std::fs::read_to_string(&args.path)
-    //     .with_context(|| format!("could not read file `{}`", args.path.display()))?;
-
-    // mfcc::find_matches(&content, &args.pattern, &mut std::io::stdout());
 
     match Mfcc::from_args() {
         Mfcc::WriteBlank { uid, path } => {
-            println!("uid: {}", uid);
-            println!("source file: {}", path.display());
+            println!("confirming uid: {}", uid);
+            println!("confirming source file: {}", path.display());
+
+            let output_file_name = "blank_with_uid.mfd";
 
             // first we want to set the blank card to have the proper uid
             match Command::new("nfc-mfsetuid").arg(&uid).output() {
@@ -100,27 +55,18 @@ fn main() {
             }
 
             // Next we want to dump the blank card
-            match dump_card(None, "blank_with_uid") {
-                Ok(_) => println!("Successfully dumped blank card"),
-                Err(_) => {
-                    println!("Error: couldn't output blank card dump");
-                    std::process::exit(exitcode::USAGE);
-                }
+            if let Ok(_) = mfcc::dump_card(None, &output_file_name) {
+                println!("Successfully dumped blank card");
             }
 
-            let dumped_card = PathBuf::from("blank_with_uid.mfd");
+            let dumped_card = PathBuf::from(&output_file_name);
 
-            // Next we want to dump the blank card
-            match write_card(true, &path, &dumped_card) {
-                Ok(_) => println!("Successfully wrote blank card"),
-                Err(_) => {
-                    println!("Error: couldn't write to blank card");
-                    std::process::exit(exitcode::USAGE);
-                }
+            if let Ok(_) = mfcc::write_card(true, &path, &dumped_card) {
+                println!("Successfully wrote blank card");
             }
 
             // remove any generated files
-            match std::fs::remove_file("blank_with_uid.mfd") {
+            match std::fs::remove_file(&output_file_name) {
                 Ok(_) => { println!("Cleaning up"); }
                 Err(error) => {
                     eprintln!("Error: {}", error);
@@ -129,7 +75,6 @@ fn main() {
             }
 
             println!("Done!");
-
         }
 
         Mfcc::Overwrite { key_file, path} => {
