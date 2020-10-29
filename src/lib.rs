@@ -44,7 +44,7 @@ pub fn dump_card(key_file: Option<&PathBuf>, output_file_name: &str) -> Result<(
 
   // Add the key file option, if it exists
   if let Some(file) = key_file {
-      command.arg("-k").arg(file);
+      command.arg("-f").arg(file);
   }
 
   let dump_command = command.output()?;
@@ -57,6 +57,31 @@ pub fn dump_card(key_file: Option<&PathBuf>, output_file_name: &str) -> Result<(
 
   Ok(())
 }
+
+
+/// Formats a card so that it can be overwritten
+pub fn format_card(file: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {   
+    
+    // Need to store Command::new into its own variable first
+    let mut command = Command::new("nfc-mfclassic");
+
+    // Add remaining arguments
+    let format_command = command
+                        .arg("f")
+                        .arg("B")
+                        .arg(file)
+                        .arg(file)
+                        .arg("f")
+                        .output()?;
+
+    // Check for errors
+    if !format_command.status.success() {
+        eprintln!("Error: couldn't format card");
+        std::process::exit(exitcode::USAGE);
+    }
+
+    Ok(())
+  }
 
 
 /// Sets the card to have the given UID

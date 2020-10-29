@@ -69,29 +69,44 @@ fn main() {
 
         Mfcc::Overwrite { key_file, path} => {
 
-            match key_file {
-                Some(file) => { println!("{}", file.display()); }
-                None => { println!("There is no key file given"); }
+            let initial_card_state   = "initial_card_state.mfd";
+            let formatted_card_state = "formatted_card_state.mfd";
+
+            // first we want to dump the card (using the keys or not)
+            if let Ok(_) = mfcc::dump_card(key_file.as_ref(), &initial_card_state) {
+                println!("Successfully dumped given card");
             }
 
-            println!("{}", path.display());
+            let initial_dumped_card = PathBuf::from(&initial_card_state);
 
+            // then we want to format the card
+            if let Ok(_) = mfcc::format_card(&initial_dumped_card) {
+                println!("Successfully formatted card");
+            }
 
+            // now dump formatted card
+            if let Ok(_) = mfcc::dump_card(None, &formatted_card_state) {
+                println!("Successfully dumped formatted card");
+            }
 
-            // First we want to dump the contents of the scanned card
-            // Using the keyfile if it exists
-            // let dump_blank = Command::new("mfoc")
-            //                 .arg("-O")
-            //                 .arg("blank_with_uid.mfd")
-            //                 .output()
-            //                 .expect("dumping of blank card failed");
-            
-            // if dump_blank.status.success() {
-            //     println!("Successfully dumped blank card");
-            // } else {
-            //     eprintln!("Error: couldn't output blank card dump");
-            //     std::process::exit(exitcode::USAGE);
-            // }
+            let formatted_card = PathBuf::from(&formatted_card_state);
+
+            // Write to formatted card
+            if let Ok(_) = mfcc::write_card(false, &path, &formatted_card) {
+                println!("Successfully wrote onto card");
+            }
+
+            // Remove initial card dump
+            if let Ok(_) = mfcc::remove_generated_file(&initial_dumped_card) {
+                println!("Cleaning up initial card dump");
+            }
+
+            // Remove formatted card dump
+            if let Ok(_) = mfcc::remove_generated_file(&formatted_card) {
+                println!("Cleaning up formatted card dump");
+            }
+
+            println!("Done!");
         }
     }
 }
