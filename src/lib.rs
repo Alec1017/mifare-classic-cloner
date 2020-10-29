@@ -57,3 +57,33 @@ pub fn dump_card(key_file: Option<&PathBuf>, output_file_name: &str) -> Result<(
 
   Ok(())
 }
+
+
+/// Sets the card to have the given UID
+pub fn set_card_uid(uid: &str) -> Result<(), Box<dyn std::error::Error>> {
+
+  let mut command = Command::new("nfc-mfsetuid");
+  
+  let set_uid_command = command.arg(uid)
+                               .output();
+
+  if let Err(_) = set_uid_command {
+      eprintln!("Error: couldn't write uid to card");
+      std::process::exit(exitcode::USAGE);
+  }
+
+  Ok(())
+}
+
+
+// Sets the card to have the given UID
+pub fn remove_generated_file(file_name: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+
+    if let Err(_) = std::fs::remove_file(&file_name) {
+        eprintln!("Error: could not delete file `{}`", file_name.display());
+        std::process::exit(exitcode::USAGE);
+    }
+  
+    Ok(())
+}
+

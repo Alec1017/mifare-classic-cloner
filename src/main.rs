@@ -1,5 +1,4 @@
 use structopt::StructOpt;
-use std::process::Command;
 use std::path::PathBuf;
 
 extern crate exitcode;
@@ -40,38 +39,29 @@ fn main() {
 
     match Mfcc::from_args() {
         Mfcc::WriteBlank { uid, path } => {
-            println!("confirming uid: {}", uid);
-            println!("confirming source file: {}", path.display());
 
             let output_file_name = "blank_with_uid.mfd";
 
-            // first we want to set the blank card to have the proper uid
-            match Command::new("nfc-mfsetuid").arg(&uid).output() {
-                Ok(_) => println!("Successfully set card to have UID: {}", &uid),
-                Err(_) => {
-                    println!("Error: can't set uid onto card");
-                    std::process::exit(exitcode::USAGE);
-                }
+            // Set the blank card to have the proper uid
+            if let Ok(_) = mfcc::set_card_uid(&uid) {
+                println!("Successfully set card to have UID: {}", &uid);
             }
 
-            // Next we want to dump the blank card
+            // Dump the blank card
             if let Ok(_) = mfcc::dump_card(None, &output_file_name) {
                 println!("Successfully dumped blank card");
             }
 
             let dumped_card = PathBuf::from(&output_file_name);
 
+            // Write to blank card
             if let Ok(_) = mfcc::write_card(true, &path, &dumped_card) {
                 println!("Successfully wrote blank card");
             }
 
-            // remove any generated files
-            match std::fs::remove_file(&output_file_name) {
-                Ok(_) => { println!("Cleaning up"); }
-                Err(error) => {
-                    eprintln!("Error: {}", error);
-                    std::process::exit(exitcode::USAGE);
-                }
+            // Remove any generated files
+            if let Ok(_) = mfcc::remove_generated_file(&dumped_card) {
+                println!("Cleaning up");
             }
 
             println!("Done!");
