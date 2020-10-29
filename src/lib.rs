@@ -22,10 +22,10 @@ pub fn write_card(is_blank: bool, source_file: &PathBuf, dest_file: &PathBuf) ->
                       .arg("a")
                       .arg(source_file)
                       .arg(dest_file)
-                      .output();
+                      .output()?;
 
   // Check for errors
-  if let Err(_) = write_command {
+  if !write_command.status.success() {
       eprintln!("Error: couldn't write to card");
       std::process::exit(exitcode::USAGE);
   }
@@ -47,10 +47,10 @@ pub fn dump_card(key_file: Option<&PathBuf>, output_file_name: &str) -> Result<(
       command.arg("-k").arg(file);
   }
 
-  let dump_command = command.output();
+  let dump_command = command.output()?;
 
   // Check for errors
-  if let Err(_) = dump_command {
+  if !dump_command.status.success() {
       eprintln!("Error: couldn't dump contents of card");
       std::process::exit(exitcode::USAGE);
   }
@@ -62,17 +62,18 @@ pub fn dump_card(key_file: Option<&PathBuf>, output_file_name: &str) -> Result<(
 /// Sets the card to have the given UID
 pub fn set_card_uid(uid: &str) -> Result<(), Box<dyn std::error::Error>> {
 
-  let mut command = Command::new("nfc-mfsetuid");
+    let mut command = Command::new("nfc-mfsetuid");
   
-  let set_uid_command = command.arg(uid)
-                               .output();
+    let set_uid_command = command
+                         .arg(uid)
+                         .output()?;
 
-  if let Err(_) = set_uid_command {
-      eprintln!("Error: couldn't write uid to card");
-      std::process::exit(exitcode::USAGE);
-  }
+    if !set_uid_command.status.success() {
+        eprintln!("Error: couldn't write uid to card");
+        std::process::exit(exitcode::USAGE);
+    }
 
-  Ok(())
+    Ok(())
 }
 
 
