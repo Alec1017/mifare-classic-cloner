@@ -1,5 +1,9 @@
-use structopt::StructOpt;
 use std::path::PathBuf;
+use std::time::{Instant};
+
+use structopt::StructOpt;
+use console::{style, Emoji};
+use indicatif::{HumanDuration};
 
 extern crate exitcode;
 
@@ -34,8 +38,21 @@ enum Mfcc {
     }
 }
 
+static LOOKING_GLASS: Emoji<'_, '_> = Emoji("🔍  ", "");
+static TRUCK: Emoji<'_, '_> = Emoji("🚚  ", "");
+static CLIP: Emoji<'_, '_> = Emoji("🔗  ", "");
+static PAPER: Emoji<'_, '_> = Emoji("📃  ", "");
+static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", ":-)");
+static SUCCESS: Emoji<'_, '_> = Emoji("✔️  ", "");
+
 
 fn main() {
+
+    let time_started = Instant::now();
+
+    // let spinner_style = ProgressStyle::default_spinner()
+    //     .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
+    //     .template("{prefix:.bold.dim} {spinner} {wide_msg}");
 
     match Mfcc::from_args() {
         Mfcc::WriteBlank { uid, path } => {
@@ -69,31 +86,88 @@ fn main() {
 
         Mfcc::Overwrite { key_file, path} => {
 
+            // Successfully dumped given card
+
+
+            // Successfully formatted card
+
+
+            // Successfully dumped formatted card
+
+
+            // Successfully wrote onto card
+
+            // Done!
+
             let initial_card_state   = "initial_card_state.mfd";
             let formatted_card_state = "formatted_card_state.mfd";
 
+            println!(
+                "{} {}Dumping given card...",
+                style("[1/4]").bold().dim(),
+                LOOKING_GLASS
+            );
+
             // first we want to dump the card (using the keys or not)
             if let Ok(_) = mfcc::dump_card(key_file.as_ref(), &initial_card_state) {
-                println!("Successfully dumped given card");
+                // println!("Successfully dumped given card");
+                println!(
+                    "{} {}Card dumped",
+                    style("[1/4]").bold().dim(),
+                    SUCCESS
+                );
             }
+
+            println!(
+                "{} {}Formatting card...",
+                style("[2/4]").bold().dim(),
+                TRUCK
+            );
 
             let initial_dumped_card = PathBuf::from(&initial_card_state);
 
             // then we want to format the card
             if let Ok(_) = mfcc::format_card(&initial_dumped_card) {
-                println!("Successfully formatted card");
+                // println!("Successfully formatted card");
+                println!(
+                    "\r{} {}Formatted card",
+                    style("[2/4]").bold().dim(),
+                    SUCCESS
+                );
             }
+
+            println!(
+                "{} {}Dumping formatted card...",
+                style("[3/4]").bold().dim(),
+                CLIP
+            );
 
             // now dump formatted card
             if let Ok(_) = mfcc::dump_card(None, &formatted_card_state) {
-                println!("Successfully dumped formatted card");
+                // println!("Successfully dumped formatted card");
+                println!(
+                    "\r{} {}Dumped formatted card",
+                    style("[3/4]").bold().dim(),
+                    SUCCESS
+                );
             }
 
             let formatted_card = PathBuf::from(&formatted_card_state);
 
+            println!(
+                "{} {}Writing to formatted card...",
+                style("[4/4]").bold().dim(),
+                PAPER
+            );
+
             // Write to formatted card
             if let Ok(_) = mfcc::write_card(false, &path, &formatted_card) {
-                println!("Successfully wrote onto card");
+                // println!("Successfully wrote onto card");
+                println!(
+                    "\r{} {}Wrote to card...",
+                    style("[4/4]").bold().dim(),
+                    SUCCESS
+                );
             }
 
             // Remove initial card dump
@@ -106,7 +180,7 @@ fn main() {
                 println!("Cleaning up formatted card dump");
             }
 
-            println!("Done!");
+            println!("{} Done in {}", SPARKLE, HumanDuration(time_started.elapsed()));
         }
     }
 }
