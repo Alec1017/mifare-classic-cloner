@@ -41,11 +41,12 @@ enum Mfcc {
 }
 
 static DUMP:    Emoji<'_, '_> = Emoji("🔍  ", "");
+static TARGET:  Emoji<'_, '_> = Emoji("🎯  ", "");
 static FORMAT:  Emoji<'_, '_> = Emoji("🚚  ", "");
 static CLEAN:   Emoji<'_, '_> = Emoji("🧹  ", "");
-static WRITE:   Emoji<'_, '_> = Emoji("📃  ", "");
-static SPARKLE: Emoji<'_, '_> = Emoji("✨ ", "");
+static WRITE:   Emoji<'_, '_> = Emoji("📝  ", "");
 static SUCCESS: Emoji<'_, '_> = Emoji("✔️  ", "");
+static DONE:    Emoji<'_, '_> = Emoji("✨  ", "");
 
 
 fn main() {
@@ -55,38 +56,68 @@ fn main() {
     // Construct the log updater
     let mut log_update = LogUpdate::new(stdout()).unwrap();
 
-    // let spinner_style = ProgressStyle::default_spinner()
-    //     .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ ")
-    //     .template("{prefix:.bold.dim} {spinner} {wide_msg}");
 
     match Mfcc::from_args() {
         Mfcc::WriteBlank { uid, path } => {
 
             let output_file_name = "blank_with_uid.mfd";
 
+            log_update.render(&format!(
+                "{} {}Setting card with new UID...",
+                style("[1/3]").bold().dim(),
+                TARGET
+            )).unwrap();
+
             // Set the blank card to have the proper uid
             if let Ok(_) = mfcc::set_card_uid(&uid) {
-                println!("Successfully set card to have UID: {}", &uid);
+                log_update.render(&format!(
+                    "{} {}Card UID set",
+                    style("[1/3]").bold().dim(),
+                    SUCCESS
+                )).unwrap();
+                println!("");
             }
+
+            log_update.render(&format!(
+                "{} {}Dumping given card...",
+                style("[2/3]").bold().dim(),
+                DUMP
+            )).unwrap();
 
             // Dump the blank card
             if let Ok(_) = mfcc::dump_card(None, &output_file_name) {
-                println!("Successfully dumped blank card");
+                log_update.render(&format!(
+                    "{} {}Card dumped",
+                    style("[2/3]").bold().dim(),
+                    SUCCESS
+                )).unwrap();
+                println!("");
             }
 
             let dumped_card = PathBuf::from(&output_file_name);
 
+            log_update.render(&format!(
+                "{} {}Writing to blank card...",
+                style("[3/3]").bold().dim(),
+                WRITE
+            )).unwrap();
+
             // Write to blank card
             if let Ok(_) = mfcc::write_card(true, &path, &dumped_card) {
-                println!("Successfully wrote blank card");
+                log_update.render(&format!(
+                    "{} {}Wrote to card",
+                    style("[3/3]").bold().dim(),
+                    SUCCESS
+                )).unwrap();
+                println!("");
             }
 
             // Remove any generated files
             if let Ok(_) = mfcc::remove_generated_file(&dumped_card) {
-                println!("Cleaning up");
+                println!("{}Cleaning up card dump", CLEAN);
             }
 
-            println!("Done!");
+            println!("\n\n{}Done in {}", DONE, HumanDuration(time_started.elapsed()));
         }
 
         Mfcc::Overwrite { key_file, path} => {
@@ -120,7 +151,7 @@ fn main() {
             // then we want to format the card
             if let Ok(_) = mfcc::format_card(&initial_dumped_card) {
                 log_update.render(&format!(
-                    "{} {}Formatted card\n",
+                    "{} {}Formatted card",
                     style("[2/4]").bold().dim(),
                     SUCCESS
                 )).unwrap();
@@ -136,7 +167,7 @@ fn main() {
             // now dump formatted card
             if let Ok(_) = mfcc::dump_card(None, &formatted_card_state) {
                 log_update.render(&format!(
-                    "{} {}Dumped formatted card\n",
+                    "{} {}Dumped formatted card",
                     style("[3/4]").bold().dim(),
                     SUCCESS
                 )).unwrap();
@@ -154,7 +185,7 @@ fn main() {
             // Write to formatted card
             if let Ok(_) = mfcc::write_card(false, &path, &formatted_card) {
                 log_update.render(&format!(
-                    "{} {}Wrote to card\n",
+                    "{} {}Wrote to card",
                     style("[4/4]").bold().dim(),
                     SUCCESS
                 )).unwrap();
@@ -163,15 +194,15 @@ fn main() {
 
             // Remove initial card dump
             if let Ok(_) = mfcc::remove_generated_file(&initial_dumped_card) {
-                println!("{}Cleaning up initial card dump", CLEAN)
+                println!("{}Cleaning up initial card dump", CLEAN);
             }
 
             // Remove formatted card dump
             if let Ok(_) = mfcc::remove_generated_file(&formatted_card) {
-                println!("{}Cleaning up formatted card dump", CLEAN)
+                println!("{}Cleaning up formatted card dump", CLEAN);
             }
 
-            println!("\n\n{} Done in {}", SPARKLE, HumanDuration(time_started.elapsed()));
+            println!("\n\n{}Done in {}", DONE, HumanDuration(time_started.elapsed()));
         }
     }
 }
