@@ -3,6 +3,13 @@ name = "mfcc"
 version = "0.1.0"
 authors = ["Alec DiFederico <alecdifederico@gmail.com>"]
 edition = "2018"
+license = "MIT"
+description = "A way to facilitate easy cloning of mifare classic cards"
+readme = "README.md"
+homepage = "https://github.com/Alec1017/mifare-classic-cloner"
+repository = "https://github.com/Alec1017/mifare-classic-cloner"
+keywords = ["cli", "mifare", "clone"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,8 +20,3 @@ exitcode = "1.1.2"
 indicatif = "0.15.0"
 console = "0.13.0"
 log-update = "0.1.0"
-
-[dev-dependencies]
-assert_cmd = "0.10"
-predicates = "1"
-tempfile = "3"
