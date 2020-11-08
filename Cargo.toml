@@ -1,5 +1,5 @@
 [package]
-name = "mfcc"
+name = "mfc-cloner"
 version = "0.1.0"
 authors = ["Alec DiFederico <alecdifederico@gmail.com>"]
 edition = "2018"

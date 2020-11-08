@@ -22,7 +22,7 @@ Requires [libnfc-1.7.1](https://github.com/nfc-tools/libnfc/releases/tag/libnfc-
 ### Installation 
 
 ```bash
-cargo install mfcc
+cargo install mfc-cloner
 ```
 
 
