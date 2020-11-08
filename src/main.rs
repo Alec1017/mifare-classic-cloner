@@ -69,7 +69,7 @@ fn main() {
             )).unwrap();
 
             // Set the blank card to have the proper uid
-            if let Ok(_) = mfcc::set_card_uid(&uid) {
+            if let Ok(_) = mfc_cloner::set_card_uid(&uid) {
                 log_update.render(&format!(
                     "{} {}Card UID set",
                     style("[1/3]").bold().dim(),
@@ -85,7 +85,7 @@ fn main() {
             )).unwrap();
 
             // Dump the blank card
-            if let Ok(_) = mfcc::dump_card(None, &output_file_name) {
+            if let Ok(_) = mfc_cloner::dump_card(None, &output_file_name) {
                 log_update.render(&format!(
                     "{} {}Card dumped",
                     style("[2/3]").bold().dim(),
@@ -103,7 +103,7 @@ fn main() {
             )).unwrap();
 
             // Write to blank card
-            if let Ok(_) = mfcc::write_card(true, &path, &dumped_card) {
+            if let Ok(_) = mfc_cloner::write_card(true, &path, &dumped_card) {
                 log_update.render(&format!(
                     "{} {}Wrote to card",
                     style("[3/3]").bold().dim(),
@@ -113,7 +113,7 @@ fn main() {
             }
 
             // Remove any generated files
-            if let Ok(_) = mfcc::remove_generated_file(&dumped_card) {
+            if let Ok(_) = mfc_cloner::remove_generated_file(&dumped_card) {
                 println!("{}Cleaning up card dump", CLEAN);
             }
 
@@ -131,7 +131,7 @@ fn main() {
             )).unwrap();
 
             // first we want to dump the card (using the keys or not)
-            if let Ok(_) = mfcc::dump_card(key_file.as_ref(), &initial_card_state) {
+            if let Ok(_) = mfc_cloner::dump_card(key_file.as_ref(), &initial_card_state) {
                 log_update.render(&format!(
                     "{} {}Card dumped",
                     style("[1/4]").bold().dim(),
@@ -149,7 +149,7 @@ fn main() {
             let initial_dumped_card = PathBuf::from(&initial_card_state);
 
             // then we want to format the card
-            if let Ok(_) = mfcc::format_card(&initial_dumped_card) {
+            if let Ok(_) = mfc_cloner::format_card(&initial_dumped_card) {
                 log_update.render(&format!(
                     "{} {}Formatted card",
                     style("[2/4]").bold().dim(),
@@ -165,7 +165,7 @@ fn main() {
             )).unwrap();
 
             // now dump formatted card
-            if let Ok(_) = mfcc::dump_card(None, &formatted_card_state) {
+            if let Ok(_) = mfc_cloner::dump_card(None, &formatted_card_state) {
                 log_update.render(&format!(
                     "{} {}Dumped formatted card",
                     style("[3/4]").bold().dim(),
@@ -183,7 +183,7 @@ fn main() {
             )).unwrap();
 
             // Write to formatted card
-            if let Ok(_) = mfcc::write_card(false, &path, &formatted_card) {
+            if let Ok(_) = mfc_cloner::write_card(false, &path, &formatted_card) {
                 log_update.render(&format!(
                     "{} {}Wrote to card",
                     style("[4/4]").bold().dim(),
@@ -193,12 +193,12 @@ fn main() {
             }
 
             // Remove initial card dump
-            if let Ok(_) = mfcc::remove_generated_file(&initial_dumped_card) {
+            if let Ok(_) = mfc_cloner::remove_generated_file(&initial_dumped_card) {
                 println!("{}Cleaning up initial card dump", CLEAN);
             }
 
             // Remove formatted card dump
-            if let Ok(_) = mfcc::remove_generated_file(&formatted_card) {
+            if let Ok(_) = mfc_cloner::remove_generated_file(&formatted_card) {
                 println!("{}Cleaning up formatted card dump", CLEAN);
             }
 
