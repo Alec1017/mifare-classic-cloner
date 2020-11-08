@@ -12,7 +12,7 @@ extern crate exitcode;
 
 
 #[derive(StructOpt)]
-#[structopt(about = "Mifare Classic Card Cloner\n\nA CLI to facillitate easy cloning of mifare classic cards")]
+#[structopt(about = "Mifare Classic Card Cloner\n\nA CLI to facilitate easy cloning of mifare classic cards")]
 enum Mfcc {
 
     /// Writes a source file to a blank card
