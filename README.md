@@ -7,7 +7,7 @@ Mfc-cloner is a way to facilitate easy cloning of mifare classic cards.
 
 It is a wrapper around libnfc and mfoc that streamlines the decrypting and writing process.
 
-Mfcc features include
+Mfc-cloner features include:
 
 - Writing a source file to a blank card
 - Overwriting a previously written card with another source file
@@ -39,7 +39,7 @@ mfc-cloner write-blank <card-uid> <source-file>
 ```
 
 
-#### Overwrite a mifare classic card
+### Overwrite a mifare classic card
 
 ```bash
 mfc-cloner overwite --key <-file> <source-file>
