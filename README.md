@@ -11,6 +11,7 @@ Mfc-cloner features include:
 
 - Writing a source file to a blank card
 - Overwriting a previously written card with another source file
+- Dumping the contents of a card into a source file
 
 ## Requirements
 
