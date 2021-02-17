@@ -37,6 +37,14 @@ enum Mfcc {
         /// The source file to overwrite the card
         #[structopt(parse(from_os_str))]
         path: PathBuf
+    },
+
+    /// Dumps the given card contents into a source file
+    Dump {
+
+        /// Optional .txt key file
+        #[structopt(short = "k", long = "key")]
+        key_file: Option<PathBuf>,
     }
 }
 
@@ -200,6 +208,28 @@ fn main() {
             // Remove formatted card dump
             if let Ok(_) = mfc_cloner::remove_generated_file(&formatted_card) {
                 println!("{}Cleaning up formatted card dump", CLEAN);
+            }
+
+            println!("\n\n{}Done in {}", DONE, HumanDuration(time_started.elapsed()));
+        }
+
+        Mfcc::Dump { key_file } => {
+            let source_file_name = "dumped_card.mfd";
+
+            log_update.render(&format!(
+                "{} {}Dumping given card...",
+                style("[1/1]").bold().dim(),
+                DUMP
+            )).unwrap();
+
+            // first we want to dump the card (using the keys or not)
+            if let Ok(_) = mfc_cloner::dump_card(key_file.as_ref(), &source_file_name) {
+                log_update.render(&format!(
+                    "{} {}Card dumped",
+                    style("[1/1]").bold().dim(),
+                    SUCCESS
+                )).unwrap();
+                println!("");
             }
 
             println!("\n\n{}Done in {}", DONE, HumanDuration(time_started.elapsed()));

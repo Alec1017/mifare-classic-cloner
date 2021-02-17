@@ -42,5 +42,12 @@ mfc-cloner write-blank <card-uid> <source-file>
 ### Overwrite a mifare classic card
 
 ```bash
-mfc-cloner overwite --key <-file> <source-file>
+mfc-cloner overwite --key <file> <source-file>
+```
+
+
+### Dump a mifare classic card
+
+```bash
+mfc-cloner dump --key <file> 
 ```
